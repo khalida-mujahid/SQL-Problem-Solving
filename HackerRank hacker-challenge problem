@@ -1,0 +1,66 @@
+  drop table if exists Hackers 
+  drop table if exists Challenges 
+
+  Create table Hackers (hacker_id int, name varchar(20));
+  Create table Challenges (challenge_id int, hacker_id int);
+
+/*Julia asked her students to create some coding challenges. 
+Write a query to print the hacker_id, name, and the total number of challenges created by each student. 
+Sort your results by the total number of challenges in descending order. 
+If more than one student created the same number of challenges, then sort the result by hacker_id. 
+If more than one student created the same number of challenges and the count is less than the maximum number of challenges created, 
+then exclude those students from the result.*/
+
+  insert into Hackers (hacker_id, name) 
+  values(12299,'Rose'),(34856,'Angela'),(79345,'Frank'),(80491,'Patrick'),(81041,'lISA')
+  ,(9999,'xyz');
+
+  insert into Challenges (challenge_id, hacker_id)
+  values(1,81041),(2,79345),(3,34856),(4,12299),(5,12299),(6,79345),(7,34856),(8,80491),(9,12299),(10,79345),
+  (11,34856),(12,80491),(13,12299),(14,12299),(15,34856),(16,12299),(17,79345),(18,34856),(19,34856),(20,80491)
+  ,(21,9999),(22,9999),(23,9999),(24,9999);
+
+  select * from Hackers;
+  select * from Challenges;
+
+# /*here I could work only with 1 CTE bcz I couldn't think of another strategy to relate/bind/join 2 CTEs which don't have common thing b/w them
+# but in next to below answer, that person created common col link b/w 2 CTEs and beautifully managed to use them for more cleaner code.
+# My code is using 1 CTE and 2-3 nested queries which not good idea.*/
+
+  with totalCnt as (
+	  Select ch.hacker_id as hackerID, name,  count(challenge_id) as ch_count
+	  from Challenges as ch inner join Hackers as h on h.hacker_id = ch.hacker_id
+	  group by hackerID, name	
+	  order by ch_count desc, hackerID asc
+  )
+  select hackerID, name, ch_count
+  from totalCnt where ch_count NOT IN /*<>*/ (
+			  select ch_count
+			  from totalCnt group by ch_count
+			  having count(name) >1 AND ch_count<>
+			  (select max(sub.chCount) as maxChallenges from 
+			  (select count(challenge_id) as chCount from Challenges group by hacker_id) as sub)
+  )
+
+# -------*** Other's solution******
+# /*Create two CTE; First to get count of challenges created by each student; 
+# Second to how many students created the same number of challenges and the highest challenge
+# after that we exclude the students whose count of challenges created is less than the highest challenge created*/
+  with cte1 as (select h.hacker_id, h.name, count(c.challenge_id) as challenge_created
+  from hackers h
+  left join challenges c
+  on h.hacker_id=c.hacker_id
+  group by h.hacker_id, h.name),
+
+  cte2 as(
+  select challenge_created, count(challenge_created) as challenge_count, (select max(challenge_created) from cte1)as max_challenge
+  from cte1
+  group by challenge_created
+
+  select cte1.hacker_id, cte1.name, cte1.challenge_created
+  from cte1
+  left join cte2
+  on cte1.challenge_created=cte2.challenge_created
+  where NOT(cte1.challenge_created < cte2.max_challenge and cte2.challenge_count!=1)
+  order by cte1.challenge_created desc, cte1.hacker_id
+
