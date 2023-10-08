@@ -50,6 +50,7 @@ To optimize and potentially make it more precise, you can consider the following
 
 - **Use of CTEs (Common Table Expressions):** You can break down the query into smaller, more manageable parts using CTEs. This can make the query more readable and maintainable. For example, you can calculate the counts for lead managers, senior managers, managers, and employees separately in CTEs before joining them together in the final query.
 
+'''sql
 
 	WITH LeadManagerCounts AS (
     		SELECT company_code, COUNT(DISTINCT lead_manager_code) AS lead_manager_count
