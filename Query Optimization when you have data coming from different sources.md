@@ -49,32 +49,32 @@ To optimize and potentially make it more precise, you can consider the following
 - **Indexing:** Ensure that the relevant columns used in join conditions and the grouping columns have appropriate indexes. Indexing can significantly improve query performance, especially when dealing with large datasets.
 
 - **Use of CTEs (Common Table Expressions):** You can break down the query into smaller, more manageable parts using CTEs. This can make the query more readable and maintainable. For example, you can calculate the counts for lead managers, senior managers, managers, and employees separately in CTEs before joining them together in the final query.
-  
-	WITH LeadManagerCounts AS (
-    	SELECT company_code, COUNT(DISTINCT lead_manager_code) AS lead_manager_count
-    	FROM Lead_Manager
-    	GROUP BY company_code
+
+  	WITH LeadManagerCounts AS (
+    		SELECT company_code, COUNT(DISTINCT lead_manager_code) AS lead_manager_count
+    		FROM Lead_Manager
+    		GROUP BY company_code
 	),
 	SeniorManagerCounts AS (
-    	SELECT company_code, COUNT(DISTINCT senior_manager_code) AS senior_manager_count
-    	FROM Senior_Manager
-    	GROUP BY company_code
+    		SELECT company_code, COUNT(DISTINCT senior_manager_code) AS senior_manager_count
+    		FROM Senior_Manager
+    		GROUP BY company_code
 	),
 	ManagerCounts AS (
-    	SELECT company_code, COUNT(DISTINCT manager_code) AS manager_count
-    	FROM Manager
-    	GROUP BY company_code
+    		SELECT company_code, COUNT(DISTINCT manager_code) AS manager_count
+    		FROM Manager
+    		GROUP BY company_code
 	),
 	EmployeeCounts AS (
-    	SELECT company_code, COUNT(DISTINCT employee_code) AS employee_count
-    	FROM EmployeeN
-    	GROUP BY company_code
+    		SELECT company_code, COUNT(DISTINCT employee_code) AS employee_count
+   	 	FROM EmployeeN
+    		GROUP BY company_code
 	)
 	SELECT C.company_code, C.founder,
     	COALESCE(LM.lead_manager_count, 0) AS 'total number of lead managers',
     	COALESCE(SM.senior_manager_count, 0) AS 'total number of senior managers',
     	COALESCE(MG.manager_count, 0) AS 'total number of managers',
-  	COALESCE(EC.employee_count, 0) AS 'total number of employees'
+    	COALESCE(EC.employee_count, 0) AS 'total number of employees'
 	FROM Company AS C
 	LEFT JOIN LeadManagerCounts AS LM ON C.company_code = LM.company_code
 	LEFT JOIN SeniorManagerCounts AS SM ON C.company_code = SM.company_code
